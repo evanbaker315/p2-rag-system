@@ -1,12 +1,13 @@
 # Gold set for the own corpus (29 CFR part 1926, OSHA construction): qid<TAB>class<TAB>text<TAB>origin.
 # c01-c20 were drafted by Claude (origin claude); h01-h10 and up are written by hand (origin hand).
+# c05 and c07 replace two drafted queries the corpus cannot answer (soil classification is in Appendix A to Subpart P, which the corpus leaves out; SCUBA depth is only a pointer to 1910.424).
 c01	identifier	1926.1153 Table 1 specified exposure control methods	claude
 c02	identifier	Chromium (VI) permissible exposure limit	claude
 c03	identifier	ANSI Z89.1 head protection	claude
 c04	identifier	1926.1431 hoisting personnel with a crane	claude
-c05	identifier	Type A Type B Type C soil classification	claude
+c05	identifier	1926.502 guardrail top rail height	claude
 c06	identifier	350 kV power line minimum clearance	claude
-c07	identifier	SCUBA diving maximum depth	claude
+c07	identifier	reverse signal alarm for earthmoving equipment	claude
 c08	paraphrase	How deep can a trench get before workers need shoring or a trench box?	claude
 c09	paraphrase	What should workers do when a charge fails to go off?	claude
 c10	paraphrase	Do roofers need to be tied off when they work six feet up?	claude
