@@ -1,4 +1,32 @@
-# Your gold set's queries, one per line: qid<TAB>class<TAB>text<TAB>origin, separated by tabs.
-# origin is hand when you wrote the query yourself and claude when a model drafted it; at least 10 must be hand.
-# class is a word you choose, for example identifier, paraphrase or mixed as in the shared sets; scores are reported per class.
-# Lines that start with # are comments, so delete these lines or keep them, as you like.
+# Gold set for the own corpus (29 CFR part 1926, OSHA construction): qid<TAB>class<TAB>text<TAB>origin.
+# c01-c20 were drafted by Claude (origin claude); h01-h10 and up are written by hand (origin hand).
+c01	identifier	1926.1153 Table 1 specified exposure control methods	claude
+c02	identifier	Chromium (VI) permissible exposure limit	claude
+c03	identifier	ANSI Z89.1 head protection	claude
+c04	identifier	1926.1431 hoisting personnel with a crane	claude
+c05	identifier	Type A Type B Type C soil classification	claude
+c06	identifier	350 kV power line minimum clearance	claude
+c07	identifier	SCUBA diving maximum depth	claude
+c08	paraphrase	How deep can a trench get before workers need shoring or a trench box?	claude
+c09	paraphrase	What should workers do when a charge fails to go off?	claude
+c10	paraphrase	Do roofers need to be tied off when they work six feet up?	claude
+c11	paraphrase	How loud can a job site get before ear protection is required?	claude
+c12	paraphrase	What does the person standing outside a manhole or tank have to do while someone is inside?	claude
+c13	paraphrase	Can someone run a crane before they are certified?	claude
+c14	paraphrase	What has to be checked before knocking down a building?	claude
+c15	mixed	fall protection training for employees who work on scaffolds	claude
+c16	mixed	inspection of crane wire rope before each shift	claude
+c17	mixed	how far a fire extinguisher may be from any point on the site	claude
+c18	mixed	ground fault circuit interrupters for temporary receptacles	claude
+c19	mixed	medical exams for workers exposed to respirable crystalline silica	claude
+c20	mixed	protecting workers from falling objects during steel erection	claude
+h01	identifier	What does OSHA 1926.501 say about fall protection?	hand
+h02	identifier	What are the ladder requirements under 1926.1053?	hand
+h03	identifier	What does 1926.451 require for scaffolding?	hand
+h04	paraphrase	How deep can workers dig before they need protection from a trench collapsing?	hand
+h05	paraphrase	What are employers supposed to do to keep workers safe around exposed electrical wires?	hand
+h06	paraphrase	When do construction workers have to wear hard hats?	hand
+h07	paraphrase	What safety training do workers need before working somewhere they could fall?	hand
+h08	mixed	What does OSHA require for silica dust exposure when cutting concrete?	hand
+h09	mixed	Under OSHA rules, when does an excavation need a ladder or another way to get out?	hand
+h10	mixed	What safety rules apply when workers are using cranes to lift heavy materials?	hand
