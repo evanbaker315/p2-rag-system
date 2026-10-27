@@ -37,6 +37,7 @@ Scores per system.
 | bm25 | 0.625 | 0.507 | 0.518 |
 | dense | 0.558 | 0.562 | 0.480 |
 | hybrid | 0.592 | 0.471 | 0.443 |
+| rerank | 0.733 | 0.800 | 0.746 |
 
 20 judged queries; nDCG uses binary labels; a random ranking of the 2,484 documents would get recall@10 near 0.004.
 <!-- p2:end shared-practice -->
@@ -55,6 +56,9 @@ The same scores per query class.
 | hybrid | Recall@10 | 0.500 | 0.405 | 0.917 |
 | hybrid | MRR@10 | 0.514 | 0.152 | 0.792 |
 | hybrid | nDCG@10 | 0.397 | 0.202 | 0.779 |
+| rerank | Recall@10 | 0.643 | 0.595 | 1.000 |
+| rerank | MRR@10 | 0.714 | 0.714 | 1.000 |
+| rerank | nDCG@10 | 0.648 | 0.626 | 1.000 |
 <!-- p2:end shared-practice-classes -->
 
 Differences between every pair of systems, each with its paired interval and the minimum detectable difference.
@@ -71,6 +75,15 @@ Differences between every pair of systems, each with its paired interval and the
 | hybrid minus dense | Recall@10 | +0.033 | [-0.125, +0.192] | 0.231 | not distinguishable |
 | hybrid minus dense | MRR@10 | -0.092 | [-0.306, +0.109] | 0.301 | not distinguishable |
 | hybrid minus dense | nDCG@10 | -0.036 | [-0.200, +0.113] | 0.227 | not distinguishable |
+| rerank minus bm25 | Recall@10 | +0.108 | [-0.133, +0.350] | 0.351 | not distinguishable |
+| rerank minus bm25 | MRR@10 | +0.293 | [+0.043, +0.533] | 0.353 | rerank higher |
+| rerank minus bm25 | nDCG@10 | +0.227 | [-0.009, +0.452] | 0.335 | not distinguishable |
+| rerank minus dense | Recall@10 | +0.175 | [+0.033, +0.333] | 0.221 | rerank higher |
+| rerank minus dense | MRR@10 | +0.237 | [+0.083, +0.408] | 0.239 | rerank higher |
+| rerank minus dense | nDCG@10 | +0.266 | [+0.128, +0.417] | 0.212 | rerank higher |
+| rerank minus hybrid | Recall@10 | +0.142 | [+0.050, +0.258] | 0.160 | rerank higher |
+| rerank minus hybrid | MRR@10 | +0.329 | [+0.164, +0.504] | 0.247 | rerank higher |
+| rerank minus hybrid | nDCG@10 | +0.302 | [+0.177, +0.432] | 0.187 | rerank higher |
 
 The interval is a paired bootstrap (10,000 resamples of the queries); MDD is the smallest difference this many queries detect 80% of the time.
 <!-- p2:end shared-practice-pairs -->
@@ -93,7 +106,7 @@ TODO: write what the practice-query intervals let you claim.
 <!-- p2:begin answers -->
 | Label | System | Verified (in) | 95% interval | not_found (in) | Declined (out) | 95% interval | Quotes found |
 | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| hybrid | hybrid | 1 of 1 (100%) | [0.207, 1.000] | 0 of 1 (0%) | 1 of 1 (100%) | [0.207, 1.000] | 1 of 1 |
+| hybrid | hybrid | 8 of 8 (100%) | [0.676, 1.000] | 0 of 8 (0%) | 4 of 4 (100%) | [0.510, 1.000] | 14 of 14 |
 <!-- p2:end answers -->
 
 Which system answered, and why that one?
@@ -248,14 +261,28 @@ Every trace in traces/ that records a Claude call:
 
 | Trace | System | Spans | Claude calls | Saved | Input tokens | Output tokens | Seconds | Input per span | Output per span | Seconds per span |
 | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| traces/answers-hybrid.jsonl | hybrid | 2 | 2 | 0 | 19,495 | 793 | 12.0 | 9,748 | 396 | 6.0 |
+| traces/answers-hybrid.jsonl | hybrid | 12 | 12 | 2 | 63,842 | 5,391 | 75.0 | 5,320 | 449 | 6.3 |
+| traces/shared-practice-rerank.jsonl | rerank | 20 | 20 | 2 | 441,831 | 5,777 | 104.0 | 22,092 | 289 | 5.2 |
+| traces/shared-test-rerank.jsonl | rerank | 40 | 40 | 0 | 793,945 | 14,077 | 228.4 | 19,849 | 352 | 5.7 |
 
 A span is one query of a run, one question of an answers file, or one claim of a judged file. A saved reply costs nothing now, so it counts the tokens and the seconds of the call that made it.
+
+Every pair of systems on the same queries where at least one calls Claude, the one with fewer Claude input tokens per query first:
+
+| Cheaper minus dearer | Queries | MRR@10 difference | 95% interval | Input tokens saved per query | Seconds saved per query | Reading |
+| --- | ---: | ---: | ---: | ---: | ---: | --- |
+| shared practice: bm25 minus rerank | 20 | -0.293 | [-0.533, -0.043] | 22,092 | 5.2 | rerank higher |
+| shared practice: dense minus rerank | 20 | -0.237 | [-0.408, -0.083] | 22,092 | 5.2 | rerank higher |
+| shared practice: hybrid minus rerank | 20 | -0.329 | [-0.504, -0.164] | 22,092 | 5.2 | rerank higher |
+
+The difference is the cheaper system's score minus the dearer one's, with its paired interval; the savings count Claude calls only, so a system that makes none saves all of the other's.
 
 Systems that do not call Claude, from traces/retrieval/ on the machine that last ran `p2 score` (git ignores that folder, so `p2 check` does not compare this part):
 
 | Trace | System | Queries | Seconds | Milliseconds per query |
 | --- | --- | ---: | ---: | ---: |
+| traces/retrieval/own-own-bm25.jsonl | bm25 | 20 | 0.01 | 0.5 |
+| traces/retrieval/own-own-dense.jsonl | dense | 20 | 0.07 | 3.4 |
 | traces/retrieval/shared-practice-bm25.jsonl | bm25 | 20 | 0.03 | 1.5 |
 | traces/retrieval/shared-practice-dense.jsonl | dense | 20 | 0.16 | 8.2 |
 | traces/retrieval/shared-practice-hybrid.jsonl | hybrid | 20 | 0.16 | 8.2 |
