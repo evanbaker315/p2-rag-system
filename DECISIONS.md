@@ -26,7 +26,7 @@ Commit this answer before your first `uv run p2 score` on the own corpus.
 Git history then shows that the expectation came first, which is what lets it be wrong in a way that teaches you something.
 If you were surprised later, say so in prompt 4 or in EVAL.md; do not come back and rewrite this one.
 
-TODO: your answer to prompt 1.
+I chose OSHA construction safety regulations because they have a lot of specific rules and section numbers that should work well for testing retrieval. I also liked that they are public domain, so I don't have to deal with licensing issues. I expect rerank to do the best since it actually looks at the passages before putting them in order. I think dense will probably do the worst because a lot of these questions involve exact regulation numbers and specific wording. BM25 should be pretty good at finding those exact matches.
 
 ---
 
