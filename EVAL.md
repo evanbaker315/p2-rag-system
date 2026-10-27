@@ -283,6 +283,8 @@ Read the queries at the top of each list in the second table, and say whether yo
 
 TODO: write the ablation: the one change, the hypothesis, the result and the claim.
 
+I expect the lab tokenizer to perform worse on identifier questions because it splits regulation numbers apart instead of keeping them together. Since a lot of OSHA questions involve specific section numbers, I think this will make it harder to find the right documents.
+
 ---
 
 ## 6. Failure analysis
