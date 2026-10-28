@@ -467,7 +467,7 @@ _No stretch runs yet (stretch option 5): `uv run p2 run --corpus own --queries e
 
 Write the five things here.
 
-I chose stretch option 3, cost and latency. I tested reranking 10 candidates instead of 20 using `rerank_c10.py`. The results are in the `stretch-cost` table. The 10-candidate version saved 26.8% of input tokens (5,923 per query), but only 0.2 seconds. MRR@10 dropped from 0.800 to 0.672, with a difference of -0.128 and interval (0.278, 0), so it wasn't statistically distinguishable. Recall@10 also dropped from 0.733 to 0.592, and that difference was distinguishable. I'd keep 20 candidates because the accuracy loss isn't worth the small time savings. Next I'd test 15 candidates to see if I can save tokens without losing as much performance.
+I chose stretch option 3, cost and latency. I tested reranking 10 candidates instead of 20 using `rerank_c10.py`. The results are in the `stretch-cost` table. The 10-candidate version saved 26.8% of input tokens (5,923 per query), but only 0.2 seconds. MRR@10 dropped from 0.800 to 0.672, with a difference of -0.128 and interval (-0.278, 0), so it wasn't statistically distinguishable. Recall@10 also dropped from 0.733 to 0.592, and that difference was distinguishable. I'd keep 20 candidates because the accuracy loss isn't worth the small time savings. Next I'd test 15 candidates to see if I can save tokens without losing as much performance.
 ---
 
 ## 9. 598E only - repeats and the pre-registered claim
