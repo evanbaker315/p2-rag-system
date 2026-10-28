@@ -25,7 +25,8 @@ The minimum detectable difference is the smallest gap this many queries could re
 
 For each of `dense`, `hybrid` and `rerank`, one or two sentences: the embedding model, how documents were chunked, what was fused and how, how many candidates the reranker saw, and anything you changed from the 12 and 13 lab code.
 
-TODO: describe your three systems.
+
+Dense uses bge-small-en-v1.5 embeddings to find documents with similar meaning. I split documents into 300-word chunks with 50 words of overlap. Hybrid combines BM25 and dense with reciprocal rank fusion (k=60), so it can use both exact words and semantic matches. Rerank takes the top 20 hybrid results and has Claude Sonnet reorder them. I changed the lab reranker to send up to 1,500 characters per passage instead of 600 because some regulations are too long to fit in 600 characters.
 
 ### Practice queries (20)
 
@@ -113,7 +114,8 @@ Which differences are distinguishable from zero and which are not?
 What is the minimum detectable difference at 20 queries, and what does that say about any gap smaller than it?
 Which claim from lecture 12 or 13 did your numbers support, and which did they leave open?
 
-TODO: write what the practice-query intervals let you claim.
+
+On the 20 practice questions, rerank had the best MRR@10 at 0.800. Dense got 0.562, BM25 got 0.507, and hybrid got 0.471. Rerank was higher than all three on MRR, and those confidence intervals did not include zero. But the differences between BM25, dense, and hybrid all included zero, so I can't say one of those three was clearly better. For example, dense beat BM25 by only 0.055, while that comparison had an MDD of 0.412. With just 20 questions, smaller differences are hard to detect. The results support the idea that reranking can improve the order of retrieved documents. They don't show that combining BM25 and dense always improves retrieval. BM25 was better at identifier questions, while dense handled paraphrases much better.
 
 ---
 
@@ -132,7 +134,10 @@ Then read three in-corpus answers that `uv run p2 verify` passed.
 For each one, open the cited chunk and say whether the quote really supports the claim next to it.
 The check proves a quote is a real piece of the chunk and cannot prove that it supports the claim, so this reading is the part only you can do.
 
-TODO: write your answer choices and your three-answer audit.
+
+I used hybrid for the 12 cited answers because it combines keyword and semantic search without paying for an extra reranker call. I didn't change `prompts/answer.txt`, so there isn't a before-and-after prompt result to compare. All 8 in-corpus answers passed verification, all 4 out-of-corpus questions were declined, and all 14 quoted passages were found. That sounds good, but passing the checker isn't the same as being correct.
+
+For a03, the quote from `cfr30-75.1714` directly says the self-rescue device must protect a miner for at least one hour, so it supports the answer. For a07, the quotes from `cfr30-56.9300` and `cfr30-57.9300` support the mid-axle-height rule for berms and guardrails. For a06, the quotes support the 90-dB criterion, the 5-dB exchange rate, full-shift monitoring, and the 115-dBA maximum. But the sentence saying the permissible exposure level equals 90 dBA over eight hours wasn't directly backed by one of its quoted claims, and the gold section `cfr30-62.101` wasn't retrieved. So I wouldn't call that answer fully supported just because it passed verification.
 
 ---
 
@@ -144,7 +149,11 @@ What is it, where did it come from, how many documents and how many megabytes, a
 Name the one or two documents you were least sure about and what you decided.
 Say which of the allowed sources in the brief it comes from.
 
-TODO: describe your corpus and its license basis.
+
+My corpus is OSHA construction safety rules from 29 CFR Part 1926, pulled from the eCFR API. It is a federal government regulations source, which was one of the allowed source types. I ended up with 310 documents, about 365,000 words, and 2.41 MB of files. I used the US government public-domain license basis, and `p2 license` reported 310 OK, 0 flagged, and 0 failing.
+
+I was less sure about the short documents that only point to another rule, like `cfr29-1926.1102`, because they don't actually give the requirement. I kept them as part of the real corpus but didn't count a pointer alone as relevant. Some long regulations were also split into multiple documents. The corpus fits the size limits, although those short references are still a weakness.
+
 
 ### The gold set
 
@@ -153,9 +162,12 @@ How did you decide that a document is relevant: write your relevance rule in two
 How did you find candidates (the systems' top 10, a keyword search, reading), and did you read every document before you labeled it?
 Your labels are binary (`rel` 1) unless you say otherwise: if you use graded labels, declare the scale here, for example 2 means the document answers the query fully and 1 means it helps.
 
-TODO: describe your gold set and your relevance rule.
 
 ---
+
+My gold set has 30 questions, 20 from `claude` and 10 from `hand`. There are 10 identifier questions, 11 paraphrase questions, and 9 mixed questions. I used all three types so I could test exact section numbers, regular everyday wording, and questions that combine both.
+
+My rule was simple, a document is relevant if it actually states the rule needed to answer the question. Just mentioning the topic or pointing to another section does not count. I used binary labels, so relevant is 1 and everything else is 0. Candidates came from the top 10 results of BM25, dense, and hybrid, plus a keyword search. The judging was done against those candidate documents and their text, not by reading all 310 documents from start to finish. The final set has 39 relevant-document judgments across the 30 questions.
 
 ## 4. Stage 2 - results on your corpus
 
@@ -275,7 +287,10 @@ Which differences are distinguishable and which are not, at your gold-set size?
 Do the `hand` queries and the `claude` queries tell the same story?
 Did your prediction in `DECISIONS.md` prompt 1 hold?
 
-TODO: write what your own-corpus intervals let you claim.
+
+On my OSHA corpus rerank did the best again with MRR@10 of 0.933. Hybrid got 0.769, dense got 0.693, and BM25 0.635. Rerank was higher than each other system, and all three MRR difference intervals excluded zero. Hybrid was also higher than BM25 by 0.135, with an interval of (0.022, 0.258). Dense versus BM25 and hybrid versus dense were not distinguishable. So my prediction that rerank would win was right, but my prediction that dense would be worst was wrong. BM25 was the lowest overall.
+
+The hand and Claude question groups weren't exactly the same. BM25 got 0.463 MRR on hand queries and 0.721 on Claude queries, but that direct interval includes zero. A clearer difference is BM25's advantage over dense: it was 0.382 higher on the Claude group relative to the hand group, with interval (0.114, 0.671). The Claude queries shared more words with the correct documents too (0.76 versus 0.58). That shows how the questions are written matters a lot. There are only 10 hand queries so I wouldn't generalize too much from them.
 
 ---
 
@@ -321,10 +336,12 @@ What did you change, what happened, and does the interval support the claim you 
 If the result is not distinguishable, say what size of effect your gold set could have seen.
 Read the queries at the top of each list in the second table, and say whether your change explains them.
 
-TODO: write the ablation: the one change, the hypothesis, the result and the claim.
 
 I expect the lab tokenizer to perform worse on identifier questions because it splits regulation numbers apart instead of keeping them together. Since a lot of OSHA questions involve specific section numbers, I think this will make it harder to find the right documents.
 
+I only changed the BM25 tokenizer from `codes` to `lab`. The lab version splits numbers like 1926.451 into separate pieces, while codes keeps the full section number too. My hypothesis was that this would hurt identifier questions. Overall MRR@10 went from 0.635 to 0.618, a drop of 0.017, with interval (-0.050, 0). That includes zero, and the MDD was 0.047, so the overall change wasn't distinguishable. Recall@10 stayed exactly the same.
+
+Identifier MRR dropped from 0.950 to 0.900, while the other two classes didn't change. The new tokenizer helped zero queries, hurt one, and left 29 unchanged. For h03, the correct scaffolding section `1926.451` fell from rank 1 to rank 2 behind `1926.452`. That fits my prediction, but one changed question isn't enough to claim the tokenizer is generally worse.
 ---
 
 ## 6. Failure analysis
@@ -335,8 +352,14 @@ Then sort the failures by cause, for example a vocabulary mismatch, near-duplica
 
 | qid | what the best system returned | what was relevant | cause | what you would try |
 |---|---|---|---|---|
+| c06 | Put 1926.1409 (over 350 kV) at rank 1 | 1926.1407 at rank 2 and 1926.1408 at rank 4 | Similar section names, but the wrong voltage range | Pay more attention to the voltage range |
+| c07 | Put 1926.601 (motor vehicles) at rank 1 | 1926.602 (earthmoving equipment) at rank 2 | Both mention reverse alarms, but only one covers earthmoving equipment | Match the specific equipment type better |
+| c09 | Returned unrelated sections, with helicopters at rank 1 | 1926.911 (misfires), missing from the top 10 | The question said "charge fails to go off" instead of "misfire" | Add similar terms to the search and retrieve more documents |
+| c11 | Found 1926.101 (hearing protection) at rank 1 but missed the noise limits | Also needed 1926.52, which was outside the top 10 | Found part of the answer but missed the actual noise limits | Retrieve more documents and include exposure limits |
+| h10 | Found three relevant crane sections in ranks 1–3 but missed another | Also needed 1926.1424 (work area control) | The question was broad, and the missing section was ranked too low | Break broad questions into smaller ones or retrieve more candidates |
 
-TODO: add one row for each failure you analyzed, and write two or three sentences on the pattern you see across them.
+The biggest problem I noticed is that rerank can't fix documents it never gets to see. For c09, c11, and h10, the missing documents weren't even in hybrid's top 20, so rerank couldn't move them up. The other problems mostly came from regulations that were very similar or questions that weren't specific enough. I think improving the initial search would help more than just changing the reranker.
+
 
 ---
 
@@ -349,8 +372,10 @@ Did the winner change between the shared corpus and yours?
 Why, or why not: what is different about the two collections (document length, vocabulary, identifiers, near-duplicates, how the queries were written), and which of your explanations did you test and which are guesses?
 Say what 20 queries on one side and your gold-set size on the other cannot support.
 
-TODO: write the cross-corpus comparison.
 
+Rerank won on both corpora. It got MRR@10 of 0.800 on the shared mining regulations and 0.933 on my OSHA construction regulations, with intervals showing it was higher than each of the other systems in both sets. What changed was hybrid versus BM25. On the shared corpus, their difference was -0.037 and the interval included zero. On OSHA, hybrid was higher by 0.135 with interval (0.022, 0.258).
+
+The collections are pretty different. The shared corpus has 2,484 documents with a median of 68 words each, while OSHA has 310 documents with a median of 381.5 words. The OSHA questions also share more words with their relevant documents overall, 0.70 compared with 0.53. For paraphrase questions it was 0.41 versus 0.11. That overlap is measured, and it might help explain why keyword based retrieval did better on OSHA. But I didn't run an experiment that proves overlap or document length caused the difference. With only 20 shared questions and 30 OSHA questions, I can't claim the same results would hold for every regulation or every question.
 ---
 
 ## 8. Stretch
@@ -367,8 +392,11 @@ Whichever option you chose, write these five things:
 4. What its interval lets you claim, and what it does not.
 5. One thing you would do next, and what result would tell you it worked.
 
+
 For a second ablation, write its hypothesis here before you run it, and commit it, so your history shows that it came first.
 For the hand and claude queries, do the same with your prediction before you score.
+
+I chose stretch option 3, cost and latency. I tested reranking 10 candidates instead of 20 using `rerank_c10.py`. The results are in the `stretch-cost` table. The 10-candidate version saved 26.8% of input tokens (5,923 per query), but only 0.2 seconds. MRR@10 dropped from 0.800 to 0.672, with a difference of -0.128 and interval (0.278, 0), so it wasn't statistically distinguishable. Recall@10 also dropped from 0.733 to 0.592, and that difference was distinguishable. I'd keep 20 candidates because the accuracy loss isn't worth the small time savings. Next I'd test 15 candidates to see if I can save tokens without losing as much performance.
 
 ### Claim-level faithfulness check (option 2)
 

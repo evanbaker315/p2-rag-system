@@ -41,7 +41,8 @@ If you rejected the alternative without measuring it, say why that was a fair ca
 "There was no alternative" is not an answer.
 Find the fork.
 
-TODO: your answer to prompt 2.
+
+One choice was how many documents the reranker should look at. I used 20 candidates, but I also tested 10. With 20, MRR@10 was 0.800. With 10, it dropped to 0.672. The smaller version saved 5,923 input tokens per question and about 0.2 seconds. I would stick with 20 because that small time savings doesn't seem worth the drop in retrieval performance. The tradeoff is spending more tokens on every question.
 
 ---
 
@@ -57,7 +58,8 @@ What did you do instead?
 If it genuinely never happened, say so plainly, and then say what you would have had to check in order to notice.
 Being honest here costs you far less than a story you cannot defend when you record your video.
 
-TODO: your answer to prompt 3.
+
+The agent originally drafted questions about soil types and SCUBA depth like they could be answered by my corpus. But the soil definitions were in an appendix that wasn't imported, and the SCUBA section only pointed to a different regulation. Those weren't useful questions for this gold set, so I didn't accept them as they were. I had the agent replace them with questions about guardrail height and backup alarms and checked the relevant sections. There was also a misfire question where none of the candidate documents was right. I read `1926.911` and marked that as relevant instead. This showed me that the agent finding a document with a related title isn't enough.
 
 ---
 
@@ -69,7 +71,8 @@ It could be a mean over a small query class, a difference whose interval include
 What would have to be true for you to trust it?
 Did you do anything to test it, and what did that show?
 
-TODO: your answer to prompt 4.
+
+I don't fully trust the 100% verified score for the cited answers. It says 8 out of 8 in-corpus answers passed and all 14 quotes were found, but that only means the quotes exist. It doesn't prove that every sentence is supported. The interval for 8 out of 8 is also (0.676, 1.), so it's a small sample. The a06 noise answer is a good example: the checker passed it even though its gold section wasn't retrieved and the explanation of 90 dBA over eight hours didn't have its own supporting quote. I'd trust this number more after manually checking more answers against the actual regulations.
 
 ---
 
@@ -80,4 +83,5 @@ One thing in your system, your corpus or your gold set that is not right, not fi
 What would you do next, and how would you find out whether it matters?
 Name the file, the query or the document where someone could look.
 
-TODO: your answer to prompt 5.
+
+One thing still wrong is that the OSHA corpus repeats the title in 288 of its 310 documents. For example, `corpora/own/docs/cfr29-1926.27.md` has the section title as a heading and again as the first line of text. That could make BM25 give those words too much weight. I would remove the duplicate line, rerun the systems with the same queries and labels, and compare the scores. If rankings change, then the cleanup mattered. There are also short documents that just point to Part 1910, which still make it hard to answer some questions.
